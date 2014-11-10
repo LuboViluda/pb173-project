@@ -5,12 +5,14 @@
 
 Client::Client( QObject* parent )
 :   QObject( parent ),
+    m_connected( false ),
     m_name( "Pes" )
 {
     connect( &m_client, SIGNAL( connected() ), this, SLOT( Connected() ) );
     connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveData() ) );
     connect( &m_client, SIGNAL( error( QAbstractSocket::SocketError ) ),
              this, SLOT( HandleError( QAbstractSocket::SocketError ) ) );
+    connect( &m_client, SIGNAL( bytesWritten( qint64 ) ), this, SLOT( SendMessage() ) );
 }
 
 Client::~Client()
@@ -26,18 +28,28 @@ void Client::start( QString address, quint16 port )
 
 void Client::Connected()
 {
-    std::cout << "Connected to: " << STR_IP( m_client.localAddress() ) << ":"
-              << m_client.localPort() << "." << std::endl;
+    std::cout << "Connected to: " << STR_IP( m_client.peerAddress() ) << ":"
+              << m_client.peerPort() << "." << std::endl;
     std::string helloMsg = HELLO_MSG( m_name );
     m_client.write( helloMsg.c_str(), helloMsg.size() + 1 );
-    m_client.flush();
+    //m_client.flush();
 }
 
 void Client::ReceiveData()
 {
-    char buffer[1024] = {0};
+    char buffer[ 1024 ] = { 0 };
     m_client.read( buffer, m_client.bytesAvailable() );
     std::cout << buffer << std::endl;
+
+    if( !strcmp( buffer, "OK" ) )
+    {
+        m_connected = true;
+    }
+    else
+    {
+        std::cout << "Server refused connection" << std::endl;
+        m_client.close();
+    }
 }
 
 void Client::HandleError( QAbstractSocket::SocketError error )
@@ -70,8 +82,11 @@ void Client::HandleError( QAbstractSocket::SocketError error )
 
 void Client::SendMessage()
 {
-    std::string line;
-    std::getline( std::cin, line );
-    qint64 written = m_client.write( line.c_str(), line.size() + 1 );
-    m_client.flush();
+    if( m_connected )
+    {
+        std::string line;
+        std::getline( std::cin, line );
+        qint64 written = m_client.write( line.c_str(), line.size() + 1 );
+        //m_client.flush();
+    }
 }

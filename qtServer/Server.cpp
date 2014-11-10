@@ -22,9 +22,8 @@ Server::~Server()
 
 void Server::acceptConnection()
 {
-    echo
     client = server.nextPendingConnection();
-    client->write( "Yo'", 4 );
+    client->write( "OK", 3 );
 
     connect( client, SIGNAL( readyRead() ),
       this, SLOT( startRead() ) );

@@ -16,16 +16,17 @@ public:
     Client( QObject* parent = NULL );
     ~Client();
 
-    void start(QString address, quint16 port);
-    void SendMessage();
+    void start( QString address, quint16 port );
 
 public slots:
     void Connected();
+    void SendMessage();
     void ReceiveData();
     void HandleError( QAbstractSocket::SocketError socketError );
 
 private:
     QTcpSocket m_client;
+    bool m_connected;
 
     std::string m_name;
 
