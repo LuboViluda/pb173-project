@@ -12,21 +12,26 @@ using namespace std;
 
 class LogFile
 {
+private:
     string file_name;
-public:
-    /**
-    *	@brief constructor for loggFile, write loggs into file "loggs.txt"
-    *   for now is this class WITHOUT UNIT TEST !!!
-    *
-    **/
-    LogFile();
 
     /**
-    *	@brief constructor for loggFile
+    *	@brief private constructor for loggFile, - for getting logFile object use get_logFile() - SINGLETON pattern
     *
     *   @string fileName name of file to write loggs
+    *
+    *   @return LogFile to existing logFile
     **/
     LogFile(string fileName);
+public:
+
+    /**
+    *	@brief getter for LogFile - SINGLETON pattern, return LogFile object, if already exist, return it, else
+    *   created it and then return
+    *
+    *   @string buffer data to write into file
+    **/
+    static LogFile* get_logFile(string name);
 
     /**
     *	@brief log function for windows to write log's data into file loggs.txt, now in synchronous approach,
@@ -36,7 +41,16 @@ public:
     *
     *   @string buffer data to write into file
     **/
-    void Make_log(string data);
+    void make_log(string data);
+
+    /**
+    *	@brief getter for created mutex, only for tests cases
+    *
+    *   @return HANDLE to mutex
+    **/
+    static HANDLE get_mutex();
+
+    ~LogFile();
 };
 
 #endif // LOGFILE_H

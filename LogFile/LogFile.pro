@@ -3,12 +3,14 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.cpp \
-    logfile.cpp
+SOURCES += \
+    logfile.cpp \
+    tests.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    logfile.h
+    logfile.h \
+    catch.hpp
 
