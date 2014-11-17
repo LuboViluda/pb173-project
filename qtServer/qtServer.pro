@@ -7,11 +7,13 @@ QT += network
 QT += widgets
 
 SOURCES += main.cpp \
-    Server.cpp
+    Server.cpp \
+    ClientThread.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    Server.h
+    Server.h \
+    ClientThread.h
 

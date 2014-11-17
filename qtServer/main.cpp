@@ -6,13 +6,10 @@ using namespace std;
 #include "server.h"
 #include <QApplication>
 
-int main(int argc, char** argv)
+int main( int argc, char** argv )
 {
-  QApplication app(argc, argv);
-  Server server;
+    QApplication app( argc, argv );
+    Server server;
 
-  //while( true )
-    //  server.startRead();
-
-  return app.exec();
+    return app.exec();
 }
