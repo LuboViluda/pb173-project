@@ -27,7 +27,7 @@ Client::Client( bool peer, QObject* parent )
     connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveData() ) );
     connect( &m_client, SIGNAL( error( QAbstractSocket::SocketError ) ),
              this, SLOT( HandleError( QAbstractSocket::SocketError ) ) );
-    connect( &m_client, SIGNAL( bytesWritten(qint64)) , this, SLOT( SendMessage() ) );
+    //connect( &m_client, SIGNAL( bytesWritten(qint64)) , this, SLOT( SendMessage() ) );
 }
 
 Client::~Client()
@@ -66,8 +66,27 @@ void Client::ReceiveData()
     }
     else if(!strncmp (buffer, "li", 2))
     {
+#ifdef _TEST
+        m_client.write( "t ", 2 );
+        m_client.write( TEST_DATA_OUT, strlen( TEST_DATA_OUT ) + 1 );
+#else
          m_client.write( "rul ", 5 );
+#endif
     }
+#ifdef _TEST
+    else if( !strncmp( buffer, "t", 1 ) )
+    {
+        std::string temp( buffer, 2, strlen( buffer ) - 1 );
+        if( !temp.compare( TEST_DATA_IN ) )
+        {
+            std::cout << "TEST: login and data sending works." << std::endl;
+        }
+        else
+        {
+            std::cout << "TEST: login or data sending does not work( or both )." << std::endl;
+        }
+    }
+#endif
     else if(!strncmp (buffer, "ul", 2))
     {
         std::string temp(buffer, 3, strlen(buffer) - 2);

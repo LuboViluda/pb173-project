@@ -6,6 +6,12 @@
 #include <QString>
 #include <QTcpSocket>
 
+//#define _TEST
+#ifdef _TEST
+    #define TEST_DATA_OUT   "123456789abcdefgh"
+    #define TEST_DATA_IN    "hgfedcba987654321"
+#endif
+
 #define LOGIN_MSG( name, pass ) std::string( "u " + name + " p " + pass + " ")
 #define STR_IP( ip ) ip.toString().toStdString()
 
@@ -19,6 +25,7 @@ public:
 
     void start( QString address, quint16 port );
     void ConnectToPeer(std::string ip);
+
 public slots:
     void Connected();
     void SendMessage();
