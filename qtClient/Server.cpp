@@ -19,9 +19,11 @@ Server::~Server()
 void Server::acceptConnection()
 {
     client = server.nextPendingConnection();
-    client->write( "OK", 3 );
+    client->write( "rld", 4 );
+    client->flush();
+    std::cout << "accepted" << std::endl;
 
-    connect( client, SIGNAL(bytesWritten(qint64)), this, SLOT( startRead() ) );
+    connect(client, SIGNAL( readyRead()), this, SLOT(startRead()));
 }
 
 void Server::startRead()
@@ -29,11 +31,4 @@ void Server::startRead()
     char buffer[ 1024 ] = {0};
     client->read( buffer, client->bytesAvailable() );
     std::cout << buffer << std::endl;
-}
-
-void Server::sendMessage()
-{
-    std::string line;
-    std::getline( std::cin, line );
-    client->write( line.c_str(), line.size() + 1 );
 }

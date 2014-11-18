@@ -19,7 +19,6 @@ public:
 public slots:
     void acceptConnection();
     void startRead();
-    void sendMessage();
 
 private:
     QTcpServer server;

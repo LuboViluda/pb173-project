@@ -24,10 +24,10 @@ Client::Client( bool peer, QObject* parent )
     m_pass("123456")
 {
     connect( &m_client, SIGNAL( connected() ), this, SLOT( Connected() ) );
-    connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveData() ) );
+    connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveDataEnc() ) );
     connect( &m_client, SIGNAL( error( QAbstractSocket::SocketError ) ),
              this, SLOT( HandleError( QAbstractSocket::SocketError ) ) );
-    //connect( &m_client, SIGNAL( bytesWritten(qint64)) , this, SLOT( SendMessage() ) );
+    connect( &m_client, SIGNAL( bytesWritten(qint64)), this, SLOT( SendMessage() ) );
 }
 
 Client::~Client()
@@ -55,6 +55,7 @@ void Client::ReceiveData()
 {
     char buffer[ 1024 ] = { 0 };
     m_client.read( buffer, m_client.bytesAvailable() );
+    //test
     std::cout << buffer << std::endl;
 
     if( !strncmp( buffer, "rld", 3) )
@@ -91,6 +92,11 @@ void Client::ReceiveData()
     {
         std::string temp(buffer, 3, strlen(buffer) - 2);
         std::cout << temp << std::endl;
+        std::cout << "Choose user: " << std::endl;
+        std::string user;
+        std::getline(std::cin, user);
+        user = "rc " + user;
+        m_client.write(user.c_str(), user.size()+1);
     }
     else if(!strncmp (buffer, "ip", 2))
     {
@@ -121,6 +127,22 @@ void Client::ReceiveData()
     {
         std::cout << "Server refused connection" << std::endl;
         m_client.close();
+    }
+}
+
+void Client::ReceiveDataEnc()
+{
+    char buffer[ 1024 ] = { 0 };
+    m_client.read( buffer, m_client.bytesAvailable() );
+    //test
+    std::cout << buffer << std::endl;
+
+    if( !strncmp( buffer, "rld", 3) )
+    {
+        m_connected = true;
+        std::string loginMsg = LOGIN_MSG( m_name, m_pass );
+        m_client.write( loginMsg.c_str(), loginMsg.size() + 1 );
+        m_client.flush();
     }
 }
 

@@ -12,8 +12,7 @@ int main(int argc, char** argv)
    /* std::string ip;
     std::getline( std::cin, ip );
     client.start( "", 8888 ); */
-
-    //test client - client
+    
     client.start("127.0.0.1", 8888);
 
 

@@ -30,6 +30,7 @@ public slots:
     void Connected();
     void SendMessage();
     void ReceiveData();
+    void ReceiveDataEnc();
     void HandleError( QAbstractSocket::SocketError socketError );
 private:
     QTcpSocket m_client;
