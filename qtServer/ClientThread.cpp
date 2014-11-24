@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <ctype.h>
 
 #include "../ProtocolMsg.h"
 #include "ClientThread.h"
@@ -47,7 +48,7 @@ void ClientThread::Read()
 {
     char buffer[ 1024 ] = { 0 };
     m_socket->read( buffer, m_socket->bytesAvailable() );
-    std::cout << buffer << std::endl;
+    //std::cout << buffer << std::endl;
 
     std::string str( buffer );
     ProcessMsg( str );

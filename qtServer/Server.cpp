@@ -4,15 +4,14 @@
 
 #include "Server.h"
 #include "ClientThread.h"
+#include "Console.h"
 
 QSqlDatabase Server::m_db = QSqlDatabase::addDatabase( "QSQLITE" );
 UserList Server::m_userList;
 
 Server::Server( QObject* parent )
 :   QTcpServer( parent )
-{
-   // connect( &m_socket, SIGNAL( newConnection() ),
-      //  this, SLOT( acceptConnection() ) );
+{   
     listen( QHostAddress::Any, 8888 );
 
     g_log->make_log( "Server started." );
@@ -30,11 +29,13 @@ Server::Server( QObject* parent )
         std::cout << "Table creation error " << query.lastError().text().toStdString() << std::endl;
 
    /* QSqlQuery query2( m_db );
-    if( query2.exec( "INSERT INTO users VALUES( 'Pes', '123456', '2asg1458ah49had' )" ) )
+    if( query2.exec( "INSERT INTO users VALUES( 'User1', '123456', '2asg1458ah49had' )" ) )
         std::cout << "Query insterd." << std::endl;
     else
         std::cout << "Table creation error " << query.lastError().text().toStdString() << std::endl;*/
 
+    Console* c = new Console( this );
+    c->start();
 }
 
 Server::~Server()
