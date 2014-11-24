@@ -5,15 +5,19 @@ CONFIG += qt
 
 QT += network
 QT += widgets
+QT += sql
 
 SOURCES += main.cpp \
     Server.cpp \
-    ClientThread.cpp
+    ClientThread.cpp \
+    ../LogFile/logfile.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
     Server.h \
-    ClientThread.h
+    ClientThread.h \
+    ../LogFile/logfile.h \
+    ../ProtocolMsg.h
 

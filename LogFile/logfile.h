@@ -53,4 +53,5 @@ public:
     ~LogFile();
 };
 
+
 #endif // LOGFILE_H

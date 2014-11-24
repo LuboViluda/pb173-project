@@ -12,7 +12,7 @@
     #define TEST_DATA_IN    "hgfedcba987654321"
 #endif
 
-#define LOGIN_MSG( name, pass ) std::string( "u " + name + " p " + pass + " ")
+#define LOGIN_MSG( name, pass ) std::string( "ld u " + name + " p " + pass + " ")
 #define STR_IP( ip ) ip.toString().toStdString()
 
 class Client : public QObject

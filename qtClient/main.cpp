@@ -7,13 +7,12 @@
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
-    Server server;
-    Client client(true);
+    //Server server;
+    Client client;
    /* std::string ip;
     std::getline( std::cin, ip );
     client.start( "", 8888 ); */
-
-    //test client - client
+    
     client.start("127.0.0.1", 8888);
 
 
