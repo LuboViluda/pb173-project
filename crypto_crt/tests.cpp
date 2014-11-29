@@ -220,7 +220,6 @@ TEST_CASE("TEST CASE - small divided table computing")
     REQUIRE(0 == memcmp(table1->p_table+32, table3->p_table, 32));
 }
 
-
 TEST_CASE("TEST CASE - divided table computing")
 {
     const int length_size = 20480;
@@ -229,10 +228,12 @@ TEST_CASE("TEST CASE - divided table computing")
     // big table
     prepare_table* table1 = (prepare_table *) malloc(sizeof(prepare_table));
 
+    // compute first big table
     table1->p_table = NULL;
     table1->table_length = length_size;
     table1->counter = 0;
     memcpy(table1->key, (const char*) key, 32);
+    ecb_prepare_table(table1);
 
     // four smaller table, compute same value as big
     prepare_table* table2 = (prepare_table *) malloc(sizeof(prepare_table));
@@ -240,49 +241,52 @@ TEST_CASE("TEST CASE - divided table computing")
     prepare_table* table4 = (prepare_table *) malloc(sizeof(prepare_table));
     prepare_table* table5 = (prepare_table *) malloc(sizeof(prepare_table));
 
+    // compute first quater of shared table
     table2->p_table = NULL;
     table2->table_length = length_size / 4;
     table2->counter = 0;
     memcpy(table2->key, (const char*) key, 32);
+    ecb_prepare_table(table2);
 
-    // compute first quater of shared table
+    // second quater...
     table3->p_table = NULL;
     table3->table_length = length_size / 4;
     table3->counter =  (int) ((length_size / 16) / 4);
     memcpy(table3->key, (const char*) key, 32);
+    ecb_prepare_table(table3);
 
-    // second quater...
+    // third quater...
     table4->p_table = NULL;
     table4->table_length = length_size / 4;
     table4->counter =  (int) ((length_size / 16) / 2);
     memcpy(table4->key, (const char*) key, 32);
+    ecb_prepare_table(table4);
 
+    // last quater
     table5->p_table = NULL;
     table5->table_length = length_size / 4;
     table5->counter =  (int) (((length_size / 16) / 4) * 3);
     memcpy(table5->key, (const char*) key, 32);
-
-    ecb_prepare_table(table1);
-    ecb_prepare_table(table2);
-    ecb_prepare_table(table3);
-    ecb_prepare_table(table4);
     ecb_prepare_table(table5);
 
-    //REQUIRE(0 == memcmp(table1->p_table, table2->p_table, (int )((length_size / 16) / 4)));
-    //REQUIRE(0 == memcmp(table1->p_table + ((length_size / 16) / 4), table3->p_table, (int )((length_size / 16) / 4)));
-/*    REQUIRE(0 == memcmp(table1->p_table + ((length_size / 16) / 2), table4->p_table, (int )((length_size / 16) / 4)));
-    REQUIRE(0 == memcmp(table1->p_table + ((length_size / 16) / 4) * 3, table4->p_table, (int )((length_size / 16) / 4)));
+    // compare per partes :)
+    int next = (int) (length_size  / 4);
+    REQUIRE(0 == memcmp(table1->p_table, table2->p_table, next));
+    REQUIRE(0 == memcmp(table1->p_table + next, table3->p_table, next));
+    REQUIRE(0 == memcmp(table1->p_table + (next * 2), table4->p_table, next));
+    REQUIRE(0 == memcmp(table1->p_table + (next * 3), table5->p_table, next));
 
+    // join tables
     unsigned char* joined_table = (unsigned char*) malloc(length_size * sizeof(unsigned char));
     int shift = 0;
-    memcpy(joined_table + shift, table2, length_size / 4);
-    shift += length_size / 4;
-    memcpy(joined_table + shift, table3, length_size / 4);
-    shift += length_size / 4;
-    memcpy(joined_table + shift, table4, length_size / 4);
-    shift += length_size / 4;
-    memcpy(joined_table + shift, table5, length_size / 4);
-    shift += length_size / 4;
-*/
-    //REQUIRE(0 == memcmp(table1->p_table, joined_table, length_size));
+    memcpy(joined_table + shift, table2->p_table, next);
+    shift += next;
+    memcpy(joined_table + shift, table3->p_table, next);
+    shift += next;
+    memcpy(joined_table + shift, table4->p_table, next);
+    shift += next;
+    memcpy(joined_table + shift, table5->p_table, next);
+
+    // compare joined tables with original big table
+    REQUIRE(0 == memcmp(table1->p_table, joined_table, length_size));
 }

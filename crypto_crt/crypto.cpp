@@ -28,15 +28,6 @@ void int_to_array(unsigned long int num, unsigned char array[32])
     }
 }
 
-/**
- * \brief   function to xor two *char of length
- *
- * \param output[out]               here is storred text after xoring
- * \param xor_table                 generated table to xor
- * \param input                     input to xor
- * \paramlength              length of char*'s to xor
- *
- */
 void xor_table(
                         unsigned char* output,
                         unsigned char* xor_table,
@@ -49,15 +40,6 @@ void xor_table(
     }
 }
 
-/**
- * \brief   function to compute table to xor, key and nonce must be same in both side!
- *
- * \param key                       key - symetric key used by both part
- * \param nonce_counter[out]        counter, be carefull, couter is changed by computation
- * \param output[out]               table to xor
- * \param table_length              required length of generated tabl
- *
- */
 void ecb_prepare_table(prepare_table *table)
 {
     unsigned char* input = NULL;
