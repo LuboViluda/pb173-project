@@ -7,6 +7,8 @@
 
 #include "Server.h"
 
+#define LOG_THREAD "Thread: " << currentThreadId() << " | "
+
 class ClientThread : public QThread
 {
 Q_OBJECT
@@ -27,16 +29,21 @@ public slots:
     void deleteLater();
 
 protected:
-    void ProcessMsg( std::string str );
+    void ProcessMsg( std::string& str );
+
+    void HandleLogin( std::stringstream& msg );
+    void HandleRegistration( std::stringstream& msg );
+    void SendUserList();
+    void SendUserDetails( std::string& username );
+    void LogOut();
 
 private:
     QTcpSocket* m_socket;
     int m_socketDescriptor;
     State m_state;
 
-    static const UserList& m_userList;
     std::string m_username;
 
-    const std::string MSG_REQUEST_LOGIN_DATA = "rld  ";
-
 };
+
+

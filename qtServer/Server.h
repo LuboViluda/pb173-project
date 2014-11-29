@@ -5,23 +5,25 @@
 #include <QObject>
 #include <QString>
 #include <QTcpSocket>
+#include <QtSql/QtSql>
 
 #include <map>
+
+#include "../LogFile/logfile.h"
+extern LogFile* g_log;
 
 struct User
 {
     User() {}
-    User( std::string p, std::string k )
-    :   m_password( p ), m_publicKey( k )
+    User( std::string k, std::string ip )
+    :   m_publicKey( k ), m_ip( ip )
     {}
 
-    std::string m_password;
     std::string m_publicKey;
+    std::string m_ip;
 
 };
 typedef std::map<std::string, User> UserList;
-
-#define echo std::cout << __FILE__ << ": " << __LINE__ << " " << std::endl;
 
 class Server: public QTcpServer
 {
@@ -29,15 +31,13 @@ Q_OBJECT
 
 public:
     Server( QObject* parent = 0 );
-    ~Server();
-
-    inline static const UserList& GetUserList() { return m_userList; }
+    virtual ~Server();
 
 protected:
     void incomingConnection( qintptr socketDescriptor );
 
-private:
-
+public:
     static UserList m_userList;
+    static QSqlDatabase m_db;
 
 };

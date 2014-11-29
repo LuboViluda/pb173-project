@@ -12,14 +12,14 @@
     #define TEST_DATA_IN    "hgfedcba987654321"
 #endif
 
-#define LOGIN_MSG( name, pass ) std::string( "u " + name + " p " + pass + " ")
+#define LOGIN_MSG( name, pass ) std::string( "ld u " + name + " p " + pass + " ")
 #define STR_IP( ip ) ip.toString().toStdString()
 
 class Client : public QObject
 {
     Q_OBJECT
 public:
-    Client( QObject* parent = NULL );
+    Client(QObject* parent = NULL );
     Client( bool peer, QObject* parent = NULL);
     ~Client();
 
@@ -28,13 +28,15 @@ public:
 
 public slots:
     void Connected();
-    void SendMessage();
+    void SendMessage(std::string);
     void ReceiveData();
-    void ReceiveDataEnc();
+    void ReceiveDataP2P();
     void HandleError( QAbstractSocket::SocketError socketError );
 private:
     QTcpSocket m_client;
     bool m_connected;
+    unsigned char iv[16];
+    unsigned char key[16];
 
     std::string m_name;
     std::string m_pass;

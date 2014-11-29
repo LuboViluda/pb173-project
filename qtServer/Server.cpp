@@ -1,70 +1,58 @@
 
-#include "ClientThread.h"
 #include <iostream>
-#include "Server.h"
+#include <sstream>
 
-UserList Server::m_userList = UserList();
+#include "Server.h"
+#include "ClientThread.h"
+#include "Console.h"
+
+QSqlDatabase Server::m_db = QSqlDatabase::addDatabase( "QSQLITE" );
+UserList Server::m_userList;
 
 Server::Server( QObject* parent )
 :   QTcpServer( parent )
-{
-   // connect( &m_socket, SIGNAL( newConnection() ),
-      //  this, SLOT( acceptConnection() ) );
-
+{   
     listen( QHostAddress::Any, 8888 );
+
+    g_log->make_log( "Server started." );
 
     std::cout << "Server started at: " << serverAddress().toString().toStdString()
               << ":" << serverPort() << "." << std::endl;
 
-    m_userList[ "User1" ] = User( "123456", "" );
-    m_userList[ "User2" ] = User( "456", "" );
-    m_userList[ "Pes" ] = User( "487", " " );
-    m_userList[ "User5" ] = User( "4516", "" );
+    m_db.setDatabaseName( "users.db3" );
+    m_db.open();
+
+    QSqlQuery query( m_db );
+    if( query.exec( "CREATE TABLE users( username text, password text, public_key text )" ) )
+        std::cout << "Table created." << std::endl;
+    else
+        std::cout << "Table creation error " << query.lastError().text().toStdString() << std::endl;
+
+   /* QSqlQuery query2( m_db );
+    if( query2.exec( "INSERT INTO users VALUES( 'User1', '123456', '2asg1458ah49had' )" ) )
+        std::cout << "Query insterd." << std::endl;
+    else
+        std::cout << "Table creation error " << query.lastError().text().toStdString() << std::endl;*/
+
+    Console* c = new Console( this );
+    c->start();
 }
 
 Server::~Server()
 {
+    g_log->make_log( "Server shutdown." );
     close();
 }
 
 void Server::incomingConnection( qintptr socketDescriptor )
 {
-    // We have a new connection
-    qDebug() << socketDescriptor << " Connecting...";
+    std::stringstream logStream;
+    logStream << "Connection on socket " << socketDescriptor << ".";
+    g_log->make_log( logStream.str() );
 
-    // Every new connection will be run in a newly created thread
     ClientThread* thread = new ClientThread( socketDescriptor, this );
-
-    // connect signal/slot
-    // once a thread is not needed, it will be beleted later
-    connect( thread, SIGNAL( finished() ), thread, SLOT(deleteLater() ) );
+    connect( thread, SIGNAL( finished() ), thread, SLOT( deleteLater() ) );
 
     thread->start();
 }
 
-/*void Server::acceptConnection()
-{    
-    QTcpSocket* client = m_socket.nextPendingConnection();
-/*
-    ClientThread* ct = new ClientThread( client );
-    QThread* thread = new QThread( this );
-    connect( thread, SIGNAL( finished() ), thread, SLOT( deleteLater() ) );
-    ct->moveToThread( thread );
-    thread->start();
-*/
-    /*echo
-    ClientThread* thread = new ClientThread( client->socketDescriptor(), this );
-    echo
-    connect( thread, SIGNAL( finished() ), thread, SLOT( deleteLater() ) );
-    echo
-    thread->start();*/
-    /*connect( client, SIGNAL( readyRead() ),
-      this, SLOT( startRead() ) );*/
-//}
-
-/*void Server::startRead()
-{
-    char buffer[ 1024 ] = {0};
-    client->read( buffer, client->bytesAvailable() );
-    std::cout << buffer << std::endl;
-}*/

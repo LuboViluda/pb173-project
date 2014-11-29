@@ -1,3 +1,4 @@
+#include "iomanip"
 #include "logfile.h"
 
 static LogFile* our_log_file = NULL;
@@ -40,8 +41,9 @@ void LogFile::make_log(string buffer)
     WaitForSingleObject(mutex, INFINITE);
 
     log_file.open(file_name.c_str(), std::ofstream::app);
-    log_file << st.wYear << "," << st.wMonth << "," <<st.wDay << "," <<st.wHour << ","
-             << st.wMinute << "," << st.wSecond << "," << st.wMilliseconds << ";";
+    log_file << setfill( '0' );
+    log_file << "[" << st.wYear << "-" << setw( 2 ) << st.wMonth << "-" << setw( 2 ) << st.wDay << "," << setw( 2 ) << st.wHour << ":"
+             << setw( 2 ) << st.wMinute << ":" << setw( 2 ) << st.wSecond << ":" << setw( 3 ) << st.wMilliseconds << "] ";
     log_file << buffer << endl;
     log_file.close();
 

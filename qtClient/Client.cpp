@@ -3,6 +3,9 @@
 #include <iostream>
 #include <QHostAddress>
 #include <QThread>
+#include "inputthread.h"
+#include "crypt.h"
+#define test 1
 
 Client::Client( QObject* parent )
 :   QObject( parent ),
@@ -14,22 +17,24 @@ Client::Client( QObject* parent )
     connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveData() ) );
     connect( &m_client, SIGNAL( error( QAbstractSocket::SocketError ) ),
              this, SLOT( HandleError( QAbstractSocket::SocketError ) ) );
-    //connect( &m_client, SIGNAL( bytesWritten(qint64)) , this, SLOT( SendMessage() ) );
 }
 
-Client::Client( bool peer, QObject* parent )
+Client::Client(bool peer, QObject* parent )
 :   QObject( parent ),
     m_connected( false ),
     m_name( "User1" ),
     m_pass("123456")
 {
     connect( &m_client, SIGNAL( connected() ), this, SLOT( Connected() ) );
-    connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveDataEnc() ) );
+    connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveDataP2P() ) );
     connect( &m_client, SIGNAL( error( QAbstractSocket::SocketError ) ),
              this, SLOT( HandleError( QAbstractSocket::SocketError ) ) );
-    connect( &m_client, SIGNAL( bytesWritten(qint64)), this, SLOT( SendMessage() ) );
+    InputThread * thread = new InputThread(this);
+    connect(thread, SIGNAL(inputSignal(std::string) ), this, SLOT (SendMessage(std::string)));
+    thread->start();
+    generate_random_iv(iv);
+    generate_key("test",key);
 }
-
 Client::~Client()
 {
     if(m_connected)
@@ -116,7 +121,7 @@ void Client::ReceiveData()
         {
             m_client.write( "ac ", 4 );
             m_client.close();
-            Server server;
+            //Server server;
         }
         else
         {
@@ -130,19 +135,38 @@ void Client::ReceiveData()
     }
 }
 
-void Client::ReceiveDataEnc()
+void Client::ReceiveDataP2P()
 {
-    char buffer[ 1024 ] = { 0 };
-    m_client.read( buffer, m_client.bytesAvailable() );
-    //test
-    std::cout << buffer << std::endl;
-
-    if( !strncmp( buffer, "rld", 3) )
+    if(test == 2)
     {
-        m_connected = true;
-        std::string loginMsg = LOGIN_MSG( m_name, m_pass );
-        m_client.write( loginMsg.c_str(), loginMsg.size() + 1 );
-        m_client.flush();
+        char buffer[ 1024 ] = { 0 };
+        m_client.read( buffer, m_client.bytesAvailable() );
+        //std::cout << buffer << std::endl;
+        if( !strncmp( buffer, "test", 4)  )
+        {
+            if( !strncmp( buffer, "test 987654321", 14) )
+            {
+                std::cout << "Test1 passed" << std::endl;
+            }
+            else
+            {
+                std::cout << "Test1 failed" << std::endl;
+
+            }
+        }
+        if( !strncmp( buffer, "test", 4)  )
+        {
+            if( strncmp( buffer, "test 087654321", 14) )
+            {
+                std::cout << "Test2 passed" << std::endl;
+            }
+            else
+            {
+                std::cout << "Test2 failed" << std::endl;
+
+            }
+        }
+
     }
 }
 
@@ -174,22 +198,29 @@ void Client::HandleError( QAbstractSocket::SocketError error )
     }
 }
 
-void Client::SendMessage()
+void Client::SendMessage(std::string line)
 {
-    if(m_connected)
+    if(test == 0)
     {
-        std::string line;
-        std::getline( std::cin, line );
         m_client.write( line.c_str(), line.size() + 1 );
     }
-    else
+    if(test == 1)
     {
-        m_client.write("#Pending...", 12);
+        unsigned char* ln = (unsigned char*)line.c_str();
+        unsigned char *enc_line;
+        std::cout << ln;
+        encryption(ln, line.size(),iv, key, &enc_line);
+        char *out = (char*)enc_line;
+        m_client.write( out, strlen(out) );
+    }
+    if(test == 2)
+    {
+         m_client.write( "123456789 tset", 16);
     }
 }
 
 void Client::ConnectToPeer(std::string ip)
 {
-    Client client(true);
-    client.start( ip.c_str(), 8888 );
+   // Client client(true);
+   // client.start( ip.c_str(), 8888 );
 }
