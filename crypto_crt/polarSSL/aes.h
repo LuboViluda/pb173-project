@@ -121,7 +121,8 @@ int aes_setkey_dec( aes_context *ctx, const unsigned char *key,
  *
  * \return         0 if successful
  */
-int aes_crypt_ecb( aes_context *ctx,
+int
+aes_crypt_ecb( aes_context *ctx,
                     int mode,
                     const unsigned char input[16],
                     unsigned char output[16] );

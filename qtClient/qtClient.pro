@@ -11,17 +11,15 @@ SOURCES += main.cpp \
     Client.cpp \
     Server.cpp \
     inputthread.cpp \
+    ../crypto_crt/crypto.cpp \
     polarSSL/aes.c \
     polarSSL/aesni.c \
-    polarSSL/entropy.c \
-    polarSSL/entropy_poll.c \
     polarSSL/padlock.c \
-    polarSSL/sha256.c \
-    polarSSL/sha512.c \
-    polarSSL/ctr_drbg.c \
-    polarSSL/timing.c \
-    crypt.cpp
-
+    polarssl/ctr_drbg.c \
+    polarSSL/entropy.c \
+    polarssl/entropy_poll.c \
+    polarssl/sha512.c \
+    polarssl/timing.c
 include(deployment.pri)
 qtcAddDeployment()
 
@@ -29,18 +27,17 @@ HEADERS += \
     Client.h \
     Server.h \
     inputthread.h \
+    ../ProtocolMsg.h \
+    ../crypto_crt/crypto.hpp \
     polarSSL/aes.h \
     polarSSL/aesni.h \
-    polarSSL/config.h \
-    polarSSL/ctr_drbg.h \
-    polarSSL/entropy.h \
-    polarSSL/entropy_poll.h \
     polarSSL/check_config.h \
-    polarSSL/padloc.h \
+    polarSSL/config.h \
     polarSSL/padlock.h \
     polarSSL/platform.h \
-    polarSSL/sha256.h \
-    polarSSL/sha512.h \
-    polarSSL/timing.h \
-    crypt.h
-
+    polarssl/ctr_drbg.h \
+    polarssl/entropy_poll.h \
+    polarSSL/entropy.h \
+    polarssl/havege.h \
+    polarssl/sha512.h \
+    polarssl/timing.c

@@ -1,4 +1,5 @@
-/*
+
+ /*
  *  VIA PadLock support functions
  *
  *  Copyright (C) 2006-2010, Brainspark B.V.

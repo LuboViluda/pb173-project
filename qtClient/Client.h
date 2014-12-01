@@ -6,13 +6,6 @@
 #include <QString>
 #include <QTcpSocket>
 
-//#define _TEST
-#ifdef _TEST
-    #define TEST_DATA_OUT   "123456789abcdefgh"
-    #define TEST_DATA_IN    "hgfedcba987654321"
-#endif
-
-#define LOGIN_MSG( name, pass ) std::string( "ld u " + name + " p " + pass + " ")
 #define STR_IP( ip ) ip.toString().toStdString()
 
 class Client : public QObject
@@ -35,8 +28,6 @@ public slots:
 private:
     QTcpSocket m_client;
     bool m_connected;
-    unsigned char iv[16];
-    unsigned char key[16];
 
     std::string m_name;
     std::string m_pass;
