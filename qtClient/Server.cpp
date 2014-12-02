@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Server.h"
 #include "Client.h"
+#include <time.h>
 
 Server::Server( int port, QObject* parent )
 :   QObject( parent ),
@@ -9,7 +10,6 @@ Server::Server( int port, QObject* parent )
     connect( &server, SIGNAL( newConnection() ),this, SLOT( acceptConnection() ) );
     server.listen( QHostAddress::Any, port );
 
-    unsigned char key[32] = "key_private_hahaha";
     prepare_table* table = (prepare_table *) malloc(sizeof(prepare_table));
     table->p_table = NULL;
     table->table_length = 20480;
@@ -34,6 +34,21 @@ void Server::startRead()
     char buffer[ 1024 ] = {0};
     client->read( buffer, client->bytesAvailable() );
 
+   if( !strncmp( buffer, "key1", 4) )
+   {
+       srand (time(NULL));
+       for(int i = 0; i < 16; i++)
+       {
+           key[i] = rand() % 256;
+       }
+
+       std::string buffer((const char*)key);
+       buffer = "key2" + buffer;
+       client->write(buffer.c_str(), buffer.size());
+       strncpy((char*)key + 16, buffer.c_str() + 4, 16);
+   }
+
+
     if((table->counter * 16) % 20480 == 0)
     {
         ecb_prepare_table(table);
@@ -44,5 +59,4 @@ void Server::startRead()
     xor_table(output, input, table->p_table, 1024);
 
     std::cout << output << std::endl;
-    table->counter = table->counter + 64;
 }

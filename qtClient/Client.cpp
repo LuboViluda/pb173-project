@@ -22,14 +22,14 @@ Client::Client(bool peer, QObject* parent )
 :   QObject( parent ),
     m_connected( false )
 {
-    connect( &m_client, SIGNAL( connected() ), this, SLOT( Connected() ) );
+    connect( &m_client, SIGNAL( connected() ), this, SLOT( Connected2() ) );
+        connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveData2() ) );
     connect( &m_client, SIGNAL( error( QAbstractSocket::SocketError ) ),
              this, SLOT( HandleError( QAbstractSocket::SocketError ) ) );
     InputThread * thread = new InputThread(this);
     connect(thread, SIGNAL(inputSignal(std::string) ), this, SLOT (SendMessage(std::string)));
     thread->start();
 
-    unsigned char key[32] = "key_private_hahaha";
     prepare_table* table = (prepare_table *) malloc(sizeof(prepare_table));
     table->p_table = NULL;
     table->table_length = 20480;
@@ -57,6 +57,38 @@ void Client::Connected()
     std::cout << "Connected to: " << STR_IP( m_client.peerAddress() ) << ":"
               << m_client.peerPort() << "." << std ::endl;
     m_connected = true;
+}
+
+void Client::Connected2()
+{
+
+    std::cout << "Connected to: " << STR_IP( m_client.peerAddress() ) << ":"
+              << m_client.peerPort() << "." << std ::endl;
+    m_connected = true;
+
+    srand (time(NULL));
+    for(int i = 0; i < 16; i++)
+    {
+        key[i] = rand() % 256;
+    }
+
+    std::string buffer((const char*)key);
+    buffer = "key1" + buffer;
+    m_client.write(buffer.c_str(), buffer.size());
+}
+
+void Client::ReceiveData2()
+{
+    char buffer[ 1024 ] = { 0 };
+    m_client.read( buffer, m_client.bytesAvailable() );
+
+    if( !strncmp( buffer, "key2", 4) )
+    {
+        unsigned char temp[32];
+        strcpy((char*)temp,(char*) key);
+        strncpy((char*)key, buffer + 4, 16);
+        strncpy((char*)key + 16, (char*)temp, 16);
+    }
 }
 
 void Client::ReceiveData()
@@ -171,7 +203,6 @@ void Client::SendMessage(std::string line)
     xor_table(output, input, table->p_table, 1024);
 
     m_client.write( (const char*)output, strlen((const char*)output) );
-    table->counter = table->counter + 64;
 }
 
 void Client::ConnectToPeer(std::string ip)

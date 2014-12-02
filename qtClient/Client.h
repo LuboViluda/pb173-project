@@ -20,8 +20,10 @@ public:
     void ConnectToPeer(std::string ip);
 public slots:
     void Connected();
+    void Connected2();
     void SendMessage(std::string);
     void ReceiveData();
+     void ReceiveData2();
     void HandleError( QAbstractSocket::SocketError socketError );
 private:
     QTcpSocket m_client;
@@ -30,6 +32,7 @@ private:
 
     std::string m_name;
     std::string m_pass;
+    unsigned char key[32];
 
     enum SocketError {
         ConnectionRefusedError,

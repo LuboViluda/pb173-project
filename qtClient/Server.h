@@ -22,6 +22,7 @@ public slots:
     void startRead();
 
 private:
+       unsigned char key[32];
     QTcpServer server;
     QTcpSocket* client;
     prepare_table* table;

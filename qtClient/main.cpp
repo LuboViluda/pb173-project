@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 
     Server * serverino = new Server(7777);
     Client * client = new Client();
-    std::string serverIP = "88.88.88.101";
+    std::string serverIP = "88.88.88.102";
     client->start(serverIP.c_str(), 8888);
 
 
