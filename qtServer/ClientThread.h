@@ -23,6 +23,7 @@ public:
     ClientThread( int socketDescriptor, QObject* parent = NULL );
 
     void run();
+    void SendMsg( const std::string& msg );
 
 public slots:
     void Read();
