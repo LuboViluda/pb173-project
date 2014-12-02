@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QString>
 #include <QTcpSocket>
-
+#include "../crypto_crt/crypto.hpp"
 #define STR_IP( ip ) ip.toString().toStdString()
 
 class Client : public QObject
@@ -18,20 +18,18 @@ public:
 
     void start( QString address, quint16 port );
     void ConnectToPeer(std::string ip);
-
 public slots:
     void Connected();
     void SendMessage(std::string);
     void ReceiveData();
-    void ReceiveDataP2P();
     void HandleError( QAbstractSocket::SocketError socketError );
 private:
     QTcpSocket m_client;
     bool m_connected;
+    prepare_table* table;
 
     std::string m_name;
     std::string m_pass;
-
 
     enum SocketError {
         ConnectionRefusedError,

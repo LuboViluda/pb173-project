@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Server.h"
-#define test 0
+#include "Client.h"
 
 Server::Server( int port, QObject* parent )
 :   QObject( parent ),
@@ -9,7 +9,12 @@ Server::Server( int port, QObject* parent )
     connect( &server, SIGNAL( newConnection() ),this, SLOT( acceptConnection() ) );
     server.listen( QHostAddress::Any, port );
 
-    std::cout << "#Waiting for another client... " << std::endl;
+    unsigned char key[32] = "key_private_hahaha";
+    prepare_table* table = (prepare_table *) malloc(sizeof(prepare_table));
+    table->p_table = NULL;
+    table->table_length = 20480;
+    table->counter = 0;
+    memcpy(table->key, (const char*) key, 32);
 }
 
 Server::~Server()
@@ -28,10 +33,16 @@ void Server::startRead()
 {
     char buffer[ 1024 ] = {0};
     client->read( buffer, client->bytesAvailable() );
-    if(test == 0)  std::cout << buffer << std::endl;
-    if(test == 2)
+
+    if((table->counter * 16) % 20480 == 0)
     {
-        std::reverse( buffer, &buffer[ strlen( buffer ) ] );
-        client->write( buffer, strlen(buffer) +1 );
+        ecb_prepare_table(table);
     }
+    unsigned char* input = (unsigned char *) malloc(1024 * sizeof(unsigned char));
+    unsigned char* output = (unsigned char *) malloc(1024 * sizeof(unsigned char));
+    memcpy(input,buffer,strlen(buffer));
+    xor_table(output, input, table->p_table, 1024);
+
+    std::cout << output << std::endl;
+    table->counter = table->counter + 64;
 }

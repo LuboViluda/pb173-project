@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QString>
 #include <QTcpSocket>
+#include "../crypto_crt/crypto.hpp"
 
 #define echo std::cout << __FILE__ << ": " << __LINE__ << " " << std::endl;
 
@@ -23,5 +24,6 @@ public slots:
 private:
     QTcpServer server;
     QTcpSocket* client;
+    prepare_table* table;
 
 };

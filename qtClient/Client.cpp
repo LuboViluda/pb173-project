@@ -3,8 +3,10 @@
 #include <iostream>
 #include <QHostAddress>
 #include <QThread>
+#include <time.h>
 #include "inputthread.h"
 #include "../ProtocolMsg.h"
+#include "../crypto_crt/crypto.hpp"
 
 Client::Client( QObject* parent )
 :   QObject( parent ),
@@ -21,12 +23,18 @@ Client::Client(bool peer, QObject* parent )
     m_connected( false )
 {
     connect( &m_client, SIGNAL( connected() ), this, SLOT( Connected() ) );
-    connect( &m_client, SIGNAL( readyRead() ), this, SLOT( ReceiveDataP2P() ) );
     connect( &m_client, SIGNAL( error( QAbstractSocket::SocketError ) ),
              this, SLOT( HandleError( QAbstractSocket::SocketError ) ) );
     InputThread * thread = new InputThread(this);
     connect(thread, SIGNAL(inputSignal(std::string) ), this, SLOT (SendMessage(std::string)));
     thread->start();
+
+    unsigned char key[32] = "key_private_hahaha";
+    prepare_table* table = (prepare_table *) malloc(sizeof(prepare_table));
+    table->p_table = NULL;
+    table->table_length = 20480;
+    table->counter = 0;
+    memcpy(table->key, (const char*) key, 32);
 }
 Client::~Client()
 {
@@ -93,7 +101,7 @@ void Client::ReceiveData()
     {
         std::string temp(buffer, 3, strlen(buffer) - 2);
         std::cout << temp << std::endl;
-        std::cout << "Choose user: " << std::endl;
+        std::cout << "Choose user: (type 'refresh' to refresh list or 'dc' to disconnect) " << std::endl;
         std::string user;
         std::getline(std::cin, user);
         if(!strncmp (user.c_str(), "refresh", 7))
@@ -121,11 +129,6 @@ void Client::ReceiveData()
         std::cout << "Server refused connection" << std::endl;
         m_client.close();
     }
-}
-
-void Client::ReceiveDataP2P()
-{
-
 }
 
 void Client::HandleError( QAbstractSocket::SocketError error )
@@ -158,7 +161,17 @@ void Client::HandleError( QAbstractSocket::SocketError error )
 
 void Client::SendMessage(std::string line)
 {
+    if((table->counter * 16) % 20480 == 0)
+    {
+        ecb_prepare_table(table);
+    }
+    unsigned char* input = (unsigned char *) malloc(1024 * sizeof(unsigned char));
+    unsigned char* output = (unsigned char *) malloc(1024 * sizeof(unsigned char));
+    memcpy(input,line.c_str(),sizeof(line));
+    xor_table(output, input, table->p_table, 1024);
 
+    m_client.write( (const char*)output, strlen((const char*)output) );
+    table->counter = table->counter + 64;
 }
 
 void Client::ConnectToPeer(std::string ip)
