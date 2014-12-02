@@ -43,6 +43,12 @@ TEST_CASE("TEST CASE - Long Xor")
     xor_table(table6, table3, table4, length);
 
     REQUIRE(0 == memcmp(table5, table6, length));
+    free(table1);
+    free(table2);
+    free(table3);
+    free(table4);
+    free(table5);
+    free(table6);
 }
 
 TEST_CASE("TEST CASE - Xor without changes")
@@ -65,6 +71,10 @@ TEST_CASE("TEST CASE - Xor without changes")
     xor_table(table3, table1, table2, length);
 
     REQUIRE_FALSE(0 == memcmp(table3, table4, length));
+    free(table1);
+    free(table2);
+    free(table3);
+    free(table4);
 }
 
 TEST_CASE("TEST CASE - Xor shared parameters")
@@ -89,6 +99,10 @@ TEST_CASE("TEST CASE - Xor shared parameters")
     xor_table(table3, table4, table3, length);
 
     REQUIRE(0 == memcmp(table1, table3, length));
+    free(table1);
+    free(table2);
+    free(table3);
+    free(table4);
 }
 
 TEST_CASE("TEST CASE - prepare_table() test equal table")
@@ -114,6 +128,10 @@ TEST_CASE("TEST CASE - prepare_table() test equal table")
     ecb_prepare_table(table2);
 
     REQUIRE(0 == memcmp(table1->p_table, table2->p_table, length_size));
+    free(table1->p_table);
+    free(table2->p_table);
+    free(table1);
+    free(table2);
 }
 
 TEST_CASE("TEST CASE - basic enc. and dec.")
@@ -147,6 +165,10 @@ TEST_CASE("TEST CASE - basic enc. and dec.")
     xor_table(plaintext, output, table2->p_table, length_size);
 
     REQUIRE(0 == memcmp((const char *) plaintext, (const char *) input, length_size));
+    free(table1->p_table);
+    free(table2->p_table);
+    free(table1);
+    free(table2);
 }
 
 TEST_CASE("TEST CASE - long text enc. and dec.")
@@ -185,6 +207,13 @@ TEST_CASE("TEST CASE - long text enc. and dec.")
     xor_table(plaintext, output, table2->p_table, length_size);
 
     REQUIRE(0 == memcmp((const char *) plaintext, (const char *) input, length_size));
+    free(table1->p_table);
+    free(table2->p_table);
+    free(table1);
+    free(table2);
+    free(input);
+    free(output);
+    free(plaintext);
 }
 
 TEST_CASE("TEST CASE - small divided table computing")
@@ -218,6 +247,12 @@ TEST_CASE("TEST CASE - small divided table computing")
 
     REQUIRE(0 == memcmp(table1->p_table, table2->p_table, 32));
     REQUIRE(0 == memcmp(table1->p_table+32, table3->p_table, 32));
+    free(table1->p_table);
+    free(table2->p_table);
+    free(table3->p_table);
+    free(table1);
+    free(table2);
+    free(table3);
 }
 
 TEST_CASE("TEST CASE - divided table computing")
@@ -289,4 +324,15 @@ TEST_CASE("TEST CASE - divided table computing")
 
     // compare joined tables with original big table
     REQUIRE(0 == memcmp(table1->p_table, joined_table, length_size));
+
+    free(table1->p_table);
+    free(table2->p_table);
+    free(table3->p_table);
+    free(table4->p_table);
+    free(table5->p_table);
+    free(table1);
+    free(table2);
+    free(table3);
+    free(table4);
+    free(table5);
 }
