@@ -6,6 +6,7 @@
 #include <QString>
 #include <QTcpSocket>
 #include <QtSql/QtSql>
+#include <QTime>
 
 #include <map>
 

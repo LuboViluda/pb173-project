@@ -1,6 +1,8 @@
 
 #pragma once
 
+//#define SSL
+
 #include <QObject>
 #include <QThread>
 #include <QTcpSocket>
@@ -39,7 +41,11 @@ protected:
     void LogOut();
 
 private:
+#ifndef SSL
     QTcpSocket* m_socket;
+#else
+    QSslSocket* m_socket;
+#endif
     int m_socketDescriptor;
     State m_state;
 

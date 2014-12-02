@@ -22,8 +22,19 @@ void ClientThread::deleteLater()
 
 void ClientThread::run()
 {
+#ifndef SSL
     m_socket = new QTcpSocket();
     m_socket->setSocketDescriptor( m_socketDescriptor );
+#else
+    m_socket = new QSslSocket();
+    m_socket->setSocketDescriptor( m_socketDescriptor );
+
+    QSslCertificate servCert = QSslCertificate::fromPath( "../server.crt" ).first();
+    m_socket->setLocalCertificate( servCert );
+    m_socket->setPrivateKey( "../server.key" );
+
+    m_socket->startServerEncryption();
+#endif
 
     std::stringstream logStream;
     logStream << LOG_THREAD
