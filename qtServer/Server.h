@@ -8,19 +8,18 @@
 #include <QtSql/QtSql>
 
 #include <map>
-#include <string>
 
 #include "../LogFile/logfile.h"
 extern LogFile* g_log;
-class ClientThread;
 
 struct User
 {
     User() {}
-    User( std::string ip )
-    :   m_ip( ip )
+    User( std::string k, std::string ip )
+    :   m_publicKey( k ), m_ip( ip )
     {}
 
+    std::string m_publicKey;
     std::string m_ip;
 
 };
@@ -39,7 +38,6 @@ protected:
 
 public:
     static UserList m_userList;
-    static std::map<std::string, ClientThread*> m_threadList;
     static QSqlDatabase m_db;
 
 };

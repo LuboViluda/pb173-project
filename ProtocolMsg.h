@@ -75,25 +75,13 @@ namespace Msg
             return ret;
         }
 
-        void AddWord( const std::string word )
+        void AddWord( const std::string word )\
         {
             if( word.size() >= m_maxSize - m_curSize )
                 return;
 
             memcpy( m_buffer + m_curSize, word.c_str(), word.size() );
             m_curSize += word.size();
-
-            m_buffer[ m_curSize++ ] = ' ';
-        }
-
-        void FromBuffer( const char* buffer )
-        {
-            unsigned size = strlen( buffer );
-            if( size >= m_maxSize - m_curSize )
-                return;
-
-            memcpy( m_buffer + m_curSize, buffer, size );
-            m_curSize += size;
 
             m_buffer[ m_curSize++ ] = ' ';
         }
