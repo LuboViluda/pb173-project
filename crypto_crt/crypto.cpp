@@ -1,5 +1,4 @@
 #include <iostream>
-#include <crypto.hpp>
 
 #include <polarSSL/aes.h>
 #include <polarSSL/aesni.h>
@@ -8,7 +7,6 @@
 #include <polarSSL/padlock.h>
 #include <polarSSL/platform.h>
 #include "polarssl/ctr_drbg.h"
-#include <polarSSL/entrophy.h>
 
 #include <polarSSL/catch.hpp>
 

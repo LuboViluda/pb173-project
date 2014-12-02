@@ -4,14 +4,14 @@
 #include <sstream>
 #include <ctype.h>
 
-#include "../ProtocolMsg.h"
 #include "ClientThread.h"
 
 ClientThread::ClientThread( int socketDescriptor, QObject* parent )
 :   QThread( parent ),
     m_socket( NULL ),
     m_socketDescriptor( socketDescriptor ),
-    m_state( CONNECTED )
+    m_state( CONNECTED ),
+    m_messages( 2048 )
 {}
 
 void ClientThread::deleteLater()
@@ -32,7 +32,7 @@ void ClientThread::run()
 
     std::cout << logStream.str() << std::endl;
 
-    m_socket->write( Msg::RequestLoginData.c_str(), Msg::RequestLoginData.size() + 1 );
+    m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
 
     logStream.str( std::string() );
     logStream << LOG_THREAD
@@ -47,11 +47,21 @@ void ClientThread::run()
 void ClientThread::Read()
 {
     char buffer[ 1024 ] = { 0 };
-    m_socket->read( buffer, m_socket->bytesAvailable() );
-    //std::cout << buffer << std::endl;
+    if( m_socket->bytesAvailable() < 1024 )
+        m_socket->read( buffer, m_socket->bytesAvailable() );
+    else
+        m_socket->bytesAvailable();
+
+    std::cout << buffer << std::endl;
+    //m_messages.FromBuffer( buffer );
 
     std::string str( buffer );
     ProcessMsg( str );
+}
+
+void ClientThread::SendMsg( const std::string& msg )
+{
+    m_socket->write( msg.c_str(), msg.size() + 1 );
 }
 
 void ClientThread::ProcessMsg( std::string& str )
@@ -82,7 +92,7 @@ void ClientThread::ProcessMsg( std::string& str )
             SendUserList();
             return;
         }
-        if( !header.compare( "rc" ) )
+        if( !header.compare( "ud" ) )
         {
             std::string username;
             msg >> username;
@@ -124,13 +134,13 @@ void ClientThread::HandleLogin( std::stringstream& msg )
         std::cout << logStream << std::endl;
 
         m_socket->write( "e 1 ", 4 );
-        m_socket->write( Msg::RequestLoginData.c_str(), Msg::RequestLoginData.size() + 1 );
+        m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
 
         return;
     }
 
     QSqlQuery query( Server::m_db );
-    std::string q( "SELECT password, public_key FROM users WHERE username = '" );
+    std::string q( "SELECT password FROM users WHERE username = '" );
     q.append( name + "'" );
 
     if( query.exec( q.c_str() ) )
@@ -141,9 +151,8 @@ void ClientThread::HandleLogin( std::stringstream& msg )
             {
                 m_username = name;
                 std::stringstream ip;
-                ip << m_socket->peerAddress().toString().toStdString() << ":" << m_socket->peerPort();
-                Server::m_userList[ m_username ] = User( query.value( "public_key" ).toString().toStdString(),
-                                                         ip.str() );
+                ip << m_socket->peerAddress().toString().toStdString();
+                Server::m_userList[ m_username ] = User( ip.str() );
 
                 m_socket->write( "li ", 4 );
                 m_state = LOGGED;
@@ -151,6 +160,8 @@ void ClientThread::HandleLogin( std::stringstream& msg )
                 logStream << LOG_THREAD <<
                           "user: '" << m_username << "' logged in.";
                 g_log->make_log( logStream.str() );
+
+                Server::m_threadList[ m_username ] = (ClientThread*)this;
 
                 return;
             }
@@ -180,7 +191,7 @@ void ClientThread::HandleLogin( std::stringstream& msg )
     }
 
     m_socket->write( "e 1 ", 4 );
-    m_socket->write( Msg::RequestLoginData.c_str(), Msg::RequestLoginData.size() + 1 );
+    m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
 }
 
 void ClientThread::HandleRegistration( std::stringstream& msg )
@@ -189,14 +200,11 @@ void ClientThread::HandleRegistration( std::stringstream& msg )
 
     std::string nameHeader;
     std::string passHeader;
-    std::string keyHeader;
     std::string name;
     std::string pass;
-    std::string key;
-    msg >> nameHeader >> name >> passHeader >> pass >> keyHeader >> key;
+    msg >> nameHeader >> name >> passHeader >> pass;
     if( nameHeader.compare( "u" ) || !name.size() ||
-        passHeader.compare( "p" ) || !pass.size() ||
-        keyHeader.compare( "k" ) || !key.size() )
+        passHeader.compare( "p" ) || !pass.size() )
     {
         logStream << "Invalid packet for registration.";
         g_log->make_log( logStream.str() );
@@ -204,13 +212,13 @@ void ClientThread::HandleRegistration( std::stringstream& msg )
         std::cout << logStream << std::endl;
 
         m_socket->write( "e 1 ", 4 );
-        m_socket->write( Msg::RequestLoginData.c_str(), Msg::RequestLoginData.size() + 1 );
+        m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
 
         return;
     }
 
     QSqlQuery lookUpQuery( Server::m_db );
-    std::string lq( "SELECT password, public_key FROM users WHERE username = '" );
+    std::string lq( "SELECT password FROM users WHERE username = '" );
     lq.append( name + "'" );
 
     if( lookUpQuery.exec( lq.c_str() ) )
@@ -223,7 +231,7 @@ void ClientThread::HandleRegistration( std::stringstream& msg )
             std::cout << logStream << std::endl;
 
             m_socket->write( "e 2 ", 4 );
-            m_socket->write( Msg::RequestLoginData.c_str(), Msg::RequestLoginData.size() + 1 );
+            m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
 
             return;
         }
@@ -237,14 +245,14 @@ void ClientThread::HandleRegistration( std::stringstream& msg )
         std::cout << logStream << std::endl;
 
         m_socket->write( "e 1 ", 4 );
-        m_socket->write( Msg::RequestLoginData.c_str(), Msg::RequestLoginData.size() + 1 );
+        m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
 
         return;
     }
 
     QSqlQuery regQuery( Server::m_db );
     std::string rq( "INSERT INTO users VALUES( '" );
-    rq.append( name + "', '" + pass + "', '" + key + "' )" );
+    rq.append( name + "', '" + pass + "' )" );
 
     if( regQuery.exec( rq.c_str() ) )
     {
@@ -253,7 +261,9 @@ void ClientThread::HandleRegistration( std::stringstream& msg )
 
         std::cout << logStream << std::endl;
 
-        m_socket->write( "reg ", 4 );
+        logStream << LOG_THREAD
+                  << "request for login data sent.";
+        m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
     }
     else
     {
@@ -264,7 +274,7 @@ void ClientThread::HandleRegistration( std::stringstream& msg )
         std::cout << logStream << std::endl;
 
         m_socket->write( "e 1 ", 4 );
-        m_socket->write( Msg::RequestLoginData.c_str(), Msg::RequestLoginData.size() + 1 );
+        m_socket->write( Msg::LoginData.c_str(), Msg::LoginData.size() + 1 );
 
         return;
     }
@@ -300,8 +310,6 @@ void ClientThread::SendUserDetails( string& username )
         m_socket->write( "ip ", 3 );
         m_socket->write( user->second.m_ip.c_str(), user->second.m_ip.size() );
         m_socket->write( " ", 1 );
-        m_socket->write( "key ", 4 );
-        m_socket->write( user->second.m_publicKey.c_str(), user->second.m_publicKey.size() );
         m_socket->write( "", 1 );
     }
     else
@@ -318,8 +326,11 @@ void ClientThread::LogOut()
     g_log->make_log( logStream.str() );
 
     logStream.str( std::string( "" ) );
-    logStream << currentThread() << "threat ended.";
+    logStream << LOG_THREAD << "threat ended.";
     g_log->make_log( logStream.str() );
+
+    Server::m_userList.erase( m_username );
+    Server::m_threadList.erase( m_username );
 
     quit();
 }
