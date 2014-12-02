@@ -4,13 +4,9 @@
 #include <sstream>
 
 #include "Console.h"
+#include "ClientThread.h"
 #include "Server.h"
 
-void ToUpper( std::string& str )
-{
-    for( int i = 0; i < str.size(); i++ )
-        str[ i ] = toupper( str[ i ] );
-}
 
 Console::Console( QObject* parent )
 :   QThread( parent )
@@ -46,6 +42,10 @@ void Console::execute()
         {
             m_command = DB;
         }
+        else if( !m_line->text().compare( "msg" ) )
+        {
+            m_command = MESSAGE;
+        }
         else
         {
             m_textBox->append( "Invalid command." );
@@ -64,32 +64,44 @@ void Console::execute()
                 break;
             }
 
-            std::stringstream ss( m_line->text().toStdString() );
-            std::string select;
-            ss >> select;
-            ToUpper( select );
-            if( !select.compare( "SELECT" ) )
+            std::stringstream result;
+            while( query.next() )
             {
-                std::stringstream result;
-                while( query.next() )
+                QSqlRecord record = query.record();
+                for( int i = 0; i < record.count(); i++ )
                 {
-                    QSqlRecord record = query.record();
-                    for( int i = 0; i < record.count(); i++ )
-                    {
-                        QSqlField field = record.field( i );
-                        QVariant variant = field.value();
-                        result << " | " << field.name().toStdString() << ": "
-                               << variant.toString().toStdString();
-                    }
-                    result << std::endl << "-----" << std::endl;
+                    QSqlField field = record.field( i );
+                    QVariant variant = field.value();
+                    result << " | " << field.name().toStdString() << ": "
+                           << variant.toString().toStdString();
                 }
-                m_textBox->append( result.str().c_str() );
+                result << std::endl << "-----" << std::endl;
+            }
+            m_textBox->append( result.str().c_str() );
+
+        }
+        m_command = NONE;
+        break;
+    case MESSAGE:
+        {
+            std::stringstream ss( m_line->text().toStdString() );
+            std::string name, msg;
+            ss >> name >> msg;
+            std::map<std::string, ClientThread*>::iterator i = Server::m_threadList.find( name );
+            if( i != Server::m_threadList.end() )
+            {
+                i->second->SendMsg( msg );
+            }
+            else
+            {
+                m_textBox->append( std::string( "User " + name + " not found." ).c_str() );
             }
         }
         m_command = NONE;
         break;
     default:
         m_textBox->append( "Invalid command." );
+        m_command = NONE;
         break;
     }
     m_line->setText( "" );

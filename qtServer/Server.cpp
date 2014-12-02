@@ -3,15 +3,16 @@
 #include <sstream>
 
 #include "Server.h"
-#include "ClientThread.h"
 #include "Console.h"
+#include "ClientThread.h"
 
 QSqlDatabase Server::m_db = QSqlDatabase::addDatabase( "QSQLITE" );
+std::map<std::string, ClientThread*> Server::m_threadList;
 UserList Server::m_userList;
 
 Server::Server( QObject* parent )
 :   QTcpServer( parent )
-{   
+{
     listen( QHostAddress::Any, 8888 );
 
     g_log->make_log( "Server started." );
@@ -23,7 +24,7 @@ Server::Server( QObject* parent )
     m_db.open();
 
     QSqlQuery query( m_db );
-    if( query.exec( "CREATE TABLE users( username text, password text, public_key text )" ) )
+    if( query.exec( "CREATE TABLE users( username text, password text )" ) )
         std::cout << "Table created." << std::endl;
     else
         std::cout << "Table creation error " << query.lastError().text().toStdString() << std::endl;
@@ -51,7 +52,7 @@ void Server::incomingConnection( qintptr socketDescriptor )
     g_log->make_log( logStream.str() );
 
     ClientThread* thread = new ClientThread( socketDescriptor, this );
-    connect( thread, SIGNAL( finished() ), thread, SLOT( deleteLater() ) );
+    connect( thread, SIGNAL( finished() ), thread, SLOT( deleteLater() ) );    
 
     thread->start();
 }

@@ -1,6 +1,8 @@
 
 #pragma once
 
+//#define SSL
+
 #include <QObject>
 #include <QThread>
 #include <QTcpSocket>
@@ -23,6 +25,7 @@ public:
     ClientThread( int socketDescriptor, QObject* parent = NULL );
 
     void run();
+    void SendMsg( const std::string& msg );
 
 public slots:
     void Read();
@@ -38,7 +41,11 @@ protected:
     void LogOut();
 
 private:
+#ifndef SSL
     QTcpSocket* m_socket;
+#else
+    QSslSocket* m_socket;
+#endif
     int m_socketDescriptor;
     State m_state;
 
